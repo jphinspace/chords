@@ -1,0 +1,606 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chords catalog format 1",
+  "type": "object",
+  "properties": {
+    "formatVersion": {
+      "const": 1
+    },
+    "catalogVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?![\\s\\S])"
+    },
+    "instruments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/instrument"
+      },
+      "minItems": 0
+    },
+    "tunings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tuning"
+      },
+      "minItems": 0
+    },
+    "shapes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/shape"
+      },
+      "minItems": 0
+    },
+    "chordTypes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/chordType"
+      },
+      "minItems": 0
+    },
+    "chords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/chord"
+      },
+      "minItems": 0
+    },
+    "chordFingerings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/chordFingering"
+      },
+      "minItems": 0
+    },
+    "derivedNotes": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/derived"
+      }
+    }
+  },
+  "required": [
+    "formatVersion",
+    "catalogVersion",
+    "instruments",
+    "tunings",
+    "shapes",
+    "chordTypes",
+    "chords",
+    "chordFingerings",
+    "derivedNotes"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?![\\s\\S])"
+    },
+    "spelling": {
+      "type": "string",
+      "pattern": "^[A-G](?:♯{1,2}|♭{1,2})?(?![\\s\\S])"
+    },
+    "finger": {
+      "enum": [
+        "thumb",
+        "index",
+        "middle",
+        "ring",
+        "little"
+      ]
+    },
+    "pitch": {
+      "type": "object",
+      "properties": {
+        "spelling": {
+          "$ref": "#/$defs/spelling"
+        },
+        "octave": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 9
+        },
+        "midi": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 127
+        }
+      },
+      "required": [
+        "spelling",
+        "octave",
+        "midi"
+      ],
+      "additionalProperties": false
+    },
+    "instrument": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stringCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "fretLimit": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "family",
+        "stringCount"
+      ],
+      "additionalProperties": false
+    },
+    "tuning": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "instrumentId": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "openStrings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pitch"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "instrumentId",
+        "name",
+        "openStrings"
+      ],
+      "additionalProperties": false
+    },
+    "instruction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "muted"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "open"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "offset"
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            }
+          },
+          "required": [
+            "kind",
+            "offset"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "positions": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "fixed"
+            },
+            "frets": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "kind",
+            "frets"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "range"
+            },
+            "min": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "max": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "barre": {
+      "type": "object",
+      "properties": {
+        "finger": {
+          "$ref": "#/$defs/finger"
+        },
+        "fromString": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "toString": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "finger",
+        "fromString",
+        "toString",
+        "offset"
+      ],
+      "additionalProperties": false
+    },
+    "assignment": {
+      "type": "object",
+      "properties": {
+        "fingers": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/finger"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "minItems": 1
+        },
+        "barres": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/barre"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "fingers"
+      ],
+      "additionalProperties": false
+    },
+    "shape": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "stringCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "strings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/instruction"
+          },
+          "minItems": 1
+        },
+        "positions": {
+          "$ref": "#/$defs/positions"
+        },
+        "fingerAssignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assignment"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "id",
+        "stringCount",
+        "strings",
+        "positions"
+      ],
+      "additionalProperties": false
+    },
+    "interval": {
+      "type": "object",
+      "properties": {
+        "degree": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "semitones": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "degree",
+        "semitones"
+      ],
+      "additionalProperties": false
+    },
+    "chordType": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intervals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/interval"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "intervals"
+      ],
+      "additionalProperties": false
+    },
+    "chord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "root": {
+          "$ref": "#/$defs/spelling"
+        },
+        "typeId": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "bass": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/spelling"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "root",
+        "typeId",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "chordFingering": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "tuningId": {
+          "$ref": "#/$defs/id"
+        },
+        "shapeId": {
+          "$ref": "#/$defs/id"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "chordId": {
+          "$ref": "#/$defs/id"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/provenance"
+          },
+          "minItems": 0
+        },
+        "fingerAssignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assignment"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "id",
+        "tuningId",
+        "shapeId",
+        "position",
+        "chordId"
+      ],
+      "additionalProperties": false
+    },
+    "derived": {
+      "type": "object",
+      "properties": {
+        "frets": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "minItems": 1
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/pitch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "frets",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

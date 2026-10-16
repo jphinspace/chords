@@ -1,0 +1,24 @@
+# Gradle/Kotlin caches and generated build output (including subprojects)
+.gradle/
+.kotlin/
+build/
+
+# Local IDE metadata and compiler output
+.idea/
+*.iml
+out/
+.classpath
+.project
+.settings/
+.vscode/*.local.json
+
+# JVM crash reports and heap dumps
+hs_err_pid*.log
+replay_pid*.log
+*.hprof
+
+# macOS metadata
+.DS_Store
+
+# Keep gradlew, gradlew.bat, gradle/wrapper/*, schema/*, and shared
+# .vscode settings in version control. Do not ignore *.jar or *.json globally.

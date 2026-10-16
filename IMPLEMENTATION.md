@@ -1,25 +1,32 @@
 # Implementation checklist
 
-Based on [PLANNING.md](PLANNING.md). Each checkbox is a separate task; implementation has not started.
+Based on [PLANNING.md](PLANNING.md). Each checkbox is a separate task.
 
-## 1. Confirm runtime, naming, and coverage
+Build tooling: Kotlin/JVM, Gradle Kotlin DSL, and kotlinx.serialization. Author typed Kotlin objects and release one shared JSON catalog for consumers in any language. Lookup and resolution functions are internal tooling; no consumer SDK is required.
 
-- [ ] Choose the consuming runtime and implementation language.
-- [ ] Choose the package format and build/test tools.
-- [ ] Set ID, chord-name, and enharmonic-alias conventions.
-- [ ] Confirm open CAGED coverage, including both G-major fingerings.
-- [ ] Confirm power-chord shapes, root strings, and fret range.
+## 1. Set up tooling and confirm scope
+
+- [x] Configure Kotlin/JVM, Gradle Kotlin DSL, and the Gradle wrapper.
+- [x] Pin the JDK toolchain and dependency versions.
+- [x] Configure kotlinx.serialization and Kotlin test tooling.
+- [x] Set ID, chord-name, and enharmonic-alias conventions.
+- [x] Confirm open CAGED coverage: C, A, G, E, D major, including both G-major fingerings.
+- [x] Confirm two-/three-note power chords, roots on the lowest two strings, root frets 0–12.
+- [x] Confirm barre/triad model support and planned tests; defer full catalog coverage.
+- [x] Confirm readable chord names with symbolic aliases (`G major`/`G`, `G power chord`/`G5`).
 
 ## 2. Define types and rules
 
-- [ ] Define distinct ID types for shared definitions and ChordFingerings.
-- [ ] Define Instrument, Tuning, and sounding-pitch types.
-- [ ] Define FingeringShape instructions and permitted positions.
-- [ ] Define finger-assignment and barre types.
-- [ ] Define chord-type and named-chord types.
-- [ ] Define ChordFingering references and the resolved result type.
-- [ ] Specify uniqueness, shape normalization, and validation rules.
-- [ ] Specify lookup results for invalid input, missing IDs, and no matches.
+- [x] Define distinct Kotlin value classes for shared IDs and ChordFingering IDs.
+- [x] Define read-only data classes for Instrument, Tuning, and sounding pitches.
+- [x] Define sealed muted/open/offset instructions and permitted shape positions.
+- [x] Define finger-assignment and barre types.
+- [x] Define chord-type and named-chord types.
+- [x] Define ChordFingering references and internal resolution types.
+- [x] Define the JSON structure, explicit instruction tags, and stable field names.
+- [x] Define catalog-version and format-version fields.
+- [x] Define a JSON Schema for the exported catalog.
+- [x] Specify uniqueness, shape normalization, and validation rules.
 
 ## 3. Author the initial catalog
 
@@ -30,39 +37,42 @@ Based on [PLANNING.md](PLANNING.md). Each checkbox is a separate task; implement
 - [ ] Add open CAGED shapes, including both G-major variants.
 - [ ] Add reusable power-chord shapes and open-root variants.
 - [ ] Add ChordFingerings linking shapes, positions, tunings, and chords.
+- [ ] Assemble authored definitions separately from the exported Catalog; omit derived data until step 4.
 - [ ] Record provenance and review curated shapes for playability.
 
-## 4. Build exports and validate data
+## 4. Build JSON and validate data
 
-- [ ] Set up the package and build scripts.
+- [ ] Add a `validateCatalog` Gradle task.
+- [ ] Implement internal ID resolution for validation and derivation.
 - [ ] Implement reference, uniqueness, and structural validation.
 - [ ] Implement shape-to-absolute-fret resolution.
 - [ ] Derive sounding pitches and chord-aware note spellings.
 - [ ] Validate chord tones, finger assignments, and barres.
 - [ ] Check promised chord and tuning coverage.
-- [ ] Generate deterministic readonly catalog exports and derived notes.
-- [ ] Make validation failures stop the build.
+- [ ] Add `buildCatalog`: validate source, derive notes, validate completed catalog/schema, then write JSON.
+- [ ] Serialize one deterministic JSON catalog with shared definitions and derived notes.
+- [ ] Validate generated JSON against its schema.
+- [ ] Make invalid data stop generation with record IDs and actionable errors.
 
-## 5. Implement and verify package lookups
+## 5. Verify data and cross-language consumption
 
-- [ ] Implement instrument/tuning listing and ID lookups.
-- [ ] Implement ChordFingering resolution.
-- [ ] Implement the exact filters listed in PLANNING.md.
-- [ ] Verify both G-major fingerings appear in the same chord lookup.
+- [ ] Verify internal ID resolution against the authored catalog.
+- [ ] Verify both G-major fingerings share a chord ID and remain distinct records.
 - [ ] Test shape reuse across positions and tunings.
 - [ ] Test open strings, muted strings, enharmonic spelling, and low B.
 - [ ] Test unequal string intervals, full/partial barres, and triad fixtures.
-- [ ] Verify deterministic ordering and invalid/missing/ambiguous results.
-- [ ] Verify consumers cannot mutate the shared catalog through public exports.
-- [ ] Build the package and verify imports in the consuming runtime.
+- [ ] Verify broken references and invalid records fail validation.
+- [ ] Verify repeated builds produce identical JSON.
+- [ ] Parse the released JSON with a non-JVM JSON parser and resolve a sample ChordFingering by ID.
+- [ ] Confirm consumers require no Kotlin or JVM runtime.
 
 ## 6. Document and release
 
-- [ ] Document installation, lookups, and ChordFingering resolution.
+- [ ] Document catalog download, JSON structure, and ID resolution.
+- [ ] Document the `validateCatalog` and `buildCatalog` commands.
 - [ ] Document string order, shape offsets, and fret positions.
 - [ ] Document coverage limits and multiple fingerings per chord.
 - [ ] Document how to add and validate catalog definitions.
-- [ ] Define package versioning and compatibility rules.
-- [ ] Add generated JSON exports if a consumer needs them.
-- [ ] Verify packaged contents, licensing, and usage examples.
-- [ ] Prepare versioned release artifacts.
+- [ ] Define catalog and format versioning compatibility rules.
+- [ ] Verify release contents, licensing, and usage examples.
+- [ ] Prepare a versioned release containing the single JSON catalog and its schema.
