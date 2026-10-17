@@ -31,3 +31,7 @@ Schema tests use [Eclipse Vert.x JSON Schema](https://vertx.io/docs/vertx-json-s
 - Every per-string array starts with string 1 at index 0. String numbers in barre spans are one-based.
 - A shape position is its anchor fret, not necessarily its root fret. Keep open strings distinct from relative fret offsets.
 - Kotlin objects are the authored source; JSON and derived pitches are generated output. No separately authored resolved catalog is maintained.
+
+## Initial catalog source
+
+`chords.catalog.initialCatalog()` assembles the authored definitions: 3 instruments/tunings, 17 named chords, 30 shapes, and 162 chord fingerings. It returns `CatalogSource` without derived notes.

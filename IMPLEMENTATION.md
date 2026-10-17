@@ -30,15 +30,16 @@ Build tooling: Kotlin/JVM, Gradle Kotlin DSL, and kotlinx.serialization. Author 
 
 ## 3. Author the initial catalog
 
-- [ ] Add six-string guitar, four-string bass, and five-string bass.
-- [ ] Add their standard tunings in string-1-first order.
-- [ ] Add major and power chord types.
-- [ ] Add required named chords and aliases.
-- [ ] Add open CAGED shapes, including both G-major variants.
-- [ ] Add reusable power-chord shapes and open-root variants.
-- [ ] Add ChordFingerings linking shapes, positions, tunings, and chords.
-- [ ] Assemble authored definitions separately from the exported Catalog; omit derived data until step 4.
-- [ ] Record provenance and review curated shapes for playability.
+- [x] Add six-string guitar, four-string bass, and five-string bass.
+- [x] Add their standard tunings in string-1-first order.
+- [x] Add major and power chord types.
+- [x] Add required named chords and aliases.
+- [x] Add open CAGED shapes, including both G-major variants.
+- [x] Add reusable power-chord shapes and open-root variants.
+- [x] Define shapes once and select template tunings explicitly.
+- [x] Add ChordFingerings linking shapes, positions, tunings, and chords.
+- [x] Assemble authored definitions separately from the exported Catalog; omit derived data until step 4.
+- [x] Record provenance.
 
 ## 4. Build JSON and validate data
 
@@ -57,10 +58,14 @@ Build tooling: Kotlin/JVM, Gradle Kotlin DSL, and kotlinx.serialization. Author 
 ## 5. Verify data and cross-language consumption
 
 - [ ] Verify internal ID resolution against the authored catalog.
-- [ ] Verify both G-major fingerings share a chord ID and remain distinct records.
-- [ ] Test shape reuse across positions and tunings.
-- [ ] Test open strings, muted strings, enharmonic spelling, and low B.
-- [ ] Test unequal string intervals, full/partial barres, and triad fixtures.
+- [x] Verify both G-major fingerings share a chord ID and remain distinct records.
+- [x] Test source shape reuse across positions and tunings.
+- [x] Test source open/muted strings, enharmonic aliases, tuning accidentals, and low B.
+- [ ] Test generated chord-aware note spellings.
+- [x] Test unequal string intervals, movable triads, and open minor/seventh fixtures.
+- [x] Verify initial coverage by record ID and tuning while allowing additional records.
+- [ ] Test full/partial barres.
+- [ ] Exercise the production resolver and validator with the existing source fixtures.
 - [ ] Verify broken references and invalid records fail validation.
 - [ ] Verify repeated builds produce identical JSON.
 - [ ] Parse the released JSON with a non-JVM JSON parser and resolve a sample ChordFingering by ID.
@@ -70,8 +75,8 @@ Build tooling: Kotlin/JVM, Gradle Kotlin DSL, and kotlinx.serialization. Author 
 
 - [ ] Document catalog download, JSON structure, and ID resolution.
 - [ ] Document the `validateCatalog` and `buildCatalog` commands.
-- [ ] Document string order, shape offsets, and fret positions.
-- [ ] Document coverage limits and multiple fingerings per chord.
+- [x] Document string order, shape offsets, and fret positions.
+- [x] Document coverage limits and multiple fingerings per chord.
 - [ ] Document how to add and validate catalog definitions.
 - [ ] Define catalog and format versioning compatibility rules.
 - [ ] Verify release contents, licensing, and usage examples.
