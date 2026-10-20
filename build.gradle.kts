@@ -26,3 +26,21 @@ tasks.test {
 sourceSets.test {
     resources.srcDir("schema")
 }
+
+val validateCatalog by tasks.registering {
+    group = "verification"
+    description = "Run tests, including catalog acceptance and JSON Schema checks."
+    dependsOn(tasks.test)
+}
+
+tasks.register<JavaExec>("buildCatalog") {
+    dependsOn(tasks.test)
+    group = "build"
+    description = "Validate and write the deterministic shared JSON catalog."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("chords.processing.BuildCatalogKt")
+    javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) })
+    args(layout.buildDirectory.file("catalog/catalog.json").get().asFile.absolutePath)
+}
+
+tasks.check { dependsOn(validateCatalog) }

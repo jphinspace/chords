@@ -2,7 +2,9 @@
 
 ## Scope
 
-A language-agnostic JSON chord catalog for applications that select an instrument, tuning, chord, and fingering, then find comparable chords elsewhere. This repository provides catalog data; the application handles conversion, similarity, ranking, and UI.
+Shapes describe string/fret patterns only; hand placement is outside scope.
+
+A language-agnostic JSON chord catalog for applications that select an instrument, tuning, chord, and shape, then find comparable chords elsewhere. This repository provides catalog data; the application handles conversion, similarity, ranking, and UI.
 
 ## Architecture
 
@@ -20,24 +22,24 @@ Define shared objects once and connect them with stable IDs:
 | --- | --- |
 | Instrument | ID, name, family, string count, optional fret limit |
 | Tuning | ID, instrument ID, name, ordered open-string pitches |
-| FingeringShape | ID, string count, per-string instructions, permitted positions, optional finger assignments |
-| Chord type | ID, interval formula, degree information needed for spelling |
-| Named chord | ID, spelled root, type ID, full name, aliases, optional slash bass |
-| ChordFingering | ID, tuning ID, shape ID, position, chord ID, optional tags, provenance, and finger assignments |
+| Shape | ID, string count, per-string instructions, permitted positions |
+| Chord structure | ID, name, intervals with degree and semitone offset |
+| Chord | ID, spelled root, structure ID, full name, aliases, optional slash bass |
+| ChordShape | ID, tuning ID, shape ID, position, chord ID, optional tags |
 
-An instrument has multiple tunings. Shapes work across compatible tunings and positions; named chords work across instruments and shapes. A ChordFingering's instrument comes through its tuning. Multiple named interpretations of the same tuning/shape/position are allowed when explicitly curated.
+An instrument has multiple tunings. Shapes work across compatible tunings and positions; chords work across instruments and shapes. A ChordShape's instrument comes through its tuning. Multiple named interpretations of the same tuning/shape/position are allowed when explicitly curated.
 
-A named chord can have multiple ChordFingerings in the same tuning. For example, guitar G major can use `320003` or `3x0003` in conventional string-6-first notation. In this catalog's string-1-first order these are `[3, 0, 0, 0, 2, 3]` and `[3, 0, 0, 0, null, 3]`. They reference separate FingeringShapes but share the same `g-major` chord ID and tuning ID. A chord name is not a unique key for a ChordFingering; name lookups return all matching fingerings.
+A chord can have multiple ChordShapes in the same tuning. For example, guitar G major can use `320003` or `3x0003` in conventional string-6-first notation. In this catalog's string-1-first order these are `[3, 0, 0, 0, 2, 3]` and `[3, 0, 0, 0, null, 3]`. They reference separate Shapes but share the same `g-major` chord ID and tuning ID. A chord name is not a unique key for a ChordShape; consumer name lookups should return all matching shapes.
 
-Author shared definitions in `CatalogSource`; the build assembles the exported `Catalog` with derived notes. Export these shared collections without repeating definitions inside chord fingerings. Internal resolution assembles referenced definitions and derives absolute frets and notes.
+Author shared definitions in `catalog/`; the build gathers them into `CatalogSource` and assembles the exported `Catalog` with derived notes. Export these shared collections without repeating definitions inside chord shapes. Internal resolution assembles referenced definitions and derives absolute frets and notes.
 
 ### Modeling conventions
 
 - Keep IDs stable when labels change; do not reuse retired IDs. Treat example IDs as opaque identifiers, not strings callers should parse.
 - In a typed language, distinguish ID types (`TuningId`, `ShapeId`, `ChordId`) to prevent passing one kind where another is expected.
-- Define semantic uniqueness separately from IDs: a ChordFingering is unique by `(tuningId, shapeId, position, chordId)`. Aliases belong to the named chord rather than duplicate records.
+- Define semantic uniqueness separately from IDs: a ChordShape is unique by `(tuningId, shapeId, position, chordId)`. Aliases belong to the chord rather than duplicate records.
 - Canonicalize fully movable shapes so their minimum sounding offset is 0; adjust position accordingly. Fixed open shapes keep the nut as their anchor. Reject duplicate shapes using their complete instructions and position rules.
-- Validate string instructions as mutually exclusive alternatives: open, offset, or muted. Missing finger assignments mean unknown/unspecified, never muted strings.
+- Validate string instructions as mutually exclusive alternatives: open, offset, or muted.
 - Keep spelling equality, sounding-pitch equality, and pitch-class equality separate. Choose the appropriate comparison explicitly in each lookup.
 - Derive notes and absolute frets from shared source definitions. Generate them during the build rather than authoring parallel copies.
 
@@ -49,7 +51,7 @@ Use sounding pitches with spelling, octave, and numeric value, such as `{ spelli
 
 ### Shapes and positions
 
-A ChordFingering's `position` is an absolute anchor fret, not necessarily the root's fret. Each shape has one instruction per string:
+A ChordShape's `position` is an absolute anchor fret, not necessarily the root's fret. Each shape has one instruction per string:
 
 | Instruction | Meaning |
 | --- | --- |
@@ -61,21 +63,17 @@ Movable shapes use offsets and muted strings, defaulting to `position >= 1`. Fix
 
 Position rules are explicit fixed fret sets or inclusive ranges. See [DATA_MODEL.md](docs/DATA_MODEL.md) for the implemented format and validation rules. Derived frets/notes still use null for muted strings.
 
-Define each shape once, independently of tunings. Chord fingerings explicitly select tuning, shape, position, chord, and tags. Adding a tuning does not automatically apply existing templates; reuse compatible shapes or author new geometry.
+Define each shape once, independently of tunings. Chord shapes explicitly select tuning, shape, position, chord, and tags. Adding a tuning does not automatically apply existing templates; reuse compatible shapes or author new geometry.
 
-Use `fixedShape` for absolute nut-anchored patterns and `FingeringShape` for explicit movable offsets. Reuse a shape only with matching string counts and validated chord results. Triads mute unused strings; different string groups use separate shapes initially.
-
-Optional finger-assignment variants use named fingers (`thumb`, `index`, `middle`, `ring`, `little`) and barres `{ finger, fromString, toString, offset }`. Barre string numbers are one-based and offsets share the shape's anchor. Full and partial barres can pass beneath higher fretted notes; sounding strings cannot be open or below the barre. Muted strings may remain muted within a span. A barre must resolve above the nut.
-
-Generic assignments belong to the shape; instrument-specific variants and musical tags such as `caged-C` belong to chord fingerings.
+Use `fixedShape` for absolute nut-anchored patterns and `Shape` for explicit movable offsets. Reuse a shape only with matching string counts and validated chord results. Triads mute unused strings; different string groups use separate shapes initially.
 
 ### Chord identity and derived notes
 
-Chord types describe intervals independently of root: major `[0, 4, 7]`, minor `[0, 3, 7]`, power `[0, 7]`. Named chords combine a type and spelled root. Preserve structured qualities, additions, extensions, and alterations as they enter the catalog; callers should not need to parse display names.
+Chord structures describe intervals independently of root: major `[0, 4, 7]`, minor `[0, 3, 7]`, power `[0, 7]`. Chords combine a chord structure and spelled root. Preserve structured qualities, additions, extensions, and alterations as they enter the catalog; callers should not need to parse display names.
 
 Keep root distinct from lowest sounding note. Preserve aliases and enharmonic spellings. Interval-degree information must distinguish identities that share pitch classes, such as added ninth and suspended second.
 
-Derive absolute frets and sounding pitches during the build. Derive spelling using chord identity. Export notes aligned with strings, retaining octaves, repeated notes, and `null` for muted strings. Include derived notes keyed by ChordFingering ID in the shared JSON catalog.
+Derive absolute frets and sounding pitches during the build. Derive spelling using chord identity. Export notes aligned with strings, retaining octaves, repeated notes, and `null` for muted strings. Include derived notes keyed by ChordShape ID in the shared JSON catalog.
 
 Initially, every chord tone must be present and no extra pitch classes are allowed; octave doubling is valid. Future omissions need explicit rules.
 
@@ -84,22 +82,22 @@ Initially, every chord tone must be present and no extra pitch classes are allow
 Example using the implemented Kotlin types (shared tuning and chord definitions are omitted):
 
 ```kotlin
-val shape = FingeringShape(
-    id = ShapeId("six-string-major-barre"),
+val shape = Shape(
+    id = ShapeId("six-string-major-movable"),
     stringCount = 6,
     strings = listOf(0, 0, 1, 2, 2, 0).map { StringInstruction.Offset(it) },
     positions = PermittedPositions.Range(min = 1),
 )
 
-val fMajor = ChordFingering(
-    id = ChordFingeringId("guitar-f-major-barre"),
+val fMajor = ChordShape(
+    id = ChordShapeId("guitar-f-major-movable"),
     tuningId = TuningId("guitar-6-e-standard"),
     shapeId = shape.id,
     position = 1,
     chordId = ChordId("f-major"),
 )
 val gMajor = fMajor.copy(
-    id = ChordFingeringId("guitar-g-major-barre"),
+    id = ChordShapeId("guitar-g-major-movable"),
     position = 3,
     chordId = ChordId("g-major"),
 )
@@ -109,18 +107,18 @@ Movable examples below use numbers for offsets and `x` for muted strings, all in
 
 | Shape | Offsets | Position | Absolute frets | Guitar E-standard chord |
 | --- | --- | --- | --- | --- |
-| Major barre | 0 0 1 2 2 0 | 1 | 1 1 2 3 3 1 | F major |
-| Same barre | 0 0 1 2 2 0 | 3 | 3 3 4 5 5 3 | G major |
+| Movable major | 0 0 1 2 2 0 | 1 | 1 1 2 3 3 1 | F major |
+| Same shape | 0 0 1 2 2 0 | 3 | 3 3 4 5 5 3 | G major |
 | Power | x x x 2 2 0 | 3 | x x x 5 5 3 | G5 |
 | Same power | x x x 2 2 0 | 5 | x x x 7 7 5 | A5 |
 | Major triad | 0 0 1 x x x | 5 | 5 5 6 x x x | A major |
 | Same triad | 0 0 1 x x x | 7 | 7 7 8 x x x | B major |
 
-The major barre can use finger 1 across strings 1–6 at offset 0. Movable shapes do not inherently require a barre. Barre and triad examples demonstrate model support; full catalog coverage comes later.
+Movable major and triad examples demonstrate model support; full catalog coverage comes later.
 
 ## Initial catalog
 
-The authored catalog contains 3 instruments, 3 tunings, 2 chord types, 17 named chords, 30 shapes, and 162 chord fingerings.
+The authored catalog contains 3 instruments, 3 tunings, 2 chord structures, 17 chords, 30 shapes, and 162 chord shapes.
 
 ### Instruments and tunings
 
@@ -134,7 +132,7 @@ Four- and five-string bass are separate instrument definitions in the bass-guita
 
 ### Open CAGED
 
-Initial scope: C, A, G, E, and D open major guitar chords, including both G-major fingerings. Minor, seventh, extended, and movable barre variants come later.
+Initial scope: C, A, G, E, and D open major guitar chords, including both G-major shapes. Minor, seventh, extended, and movable variants come later.
 
 | Chord | Absolute frets, strings 1–6 (`x` = muted) |
 | --- | --- |
@@ -154,21 +152,21 @@ Bass initially has power chords only. Curate any future open major bass shapes e
 - Reuse movable shapes at explicit positions; open-root variants need explicit permission for position 0. Validate pitches against each tuning, including unequal string intervals.
 - Mute unused strings and avoid exhaustive string-subset generation.
 - Choose canonical root spellings and useful enharmonic aliases, such as C♯5/D♭5; the suffix 5 denotes a power chord.
-- Build-time templates may generate finite chord fingerings. Runtime lookup does not synthesize fingerings.
+- Build-time templates may generate finite chord shapes. Runtime lookup does not synthesize shapes.
 
-The fret range limits initial catalog coverage, not model capability. The model can represent barre and triad shapes. Test-only fixtures cover movable triads, Drop D, E♭ standard, open minor/seventh patterns, and shape reuse across tunings. These do not expand the initial catalog. Full/partial barre behavior tests remain in step 5.
+The fret range limits initial catalog coverage, not model capability. The model can represent movable major and triad shapes. Test-only fixtures cover movable triads, Drop D, E♭ standard, open minor/seventh patterns, and shape reuse across tunings. These do not expand the initial catalog. Movable major patterns are also tested.
 
 Canonical names use readable labels such as `G major` and `G power chord`; symbols such as `G` and `G5` are aliases.
 
 ## Consumer access
 
-The JSON contains instruments, tunings, shapes, chord types, named chords, chord fingerings, and derived notes. Consumers build their own lookups using IDs and structured fields. Name/alias searches must support multiple matching fingerings. Missing catalog coverage does not imply a chord is unplayable.
+The JSON contains instruments, tunings, shapes, chord structures, chords, chord shapes, and derived notes. Consumers build their own lookups using IDs and structured fields. Name/alias searches must support multiple matching shapes. Missing catalog coverage does not imply a chord is unplayable.
 
 ## Validation
 
-Fail the build for duplicate definitions or chord fingering combinations, broken references, string-count mismatches, invalid offsets/positions/frets, entirely muted shapes, inconsistent pitches/spellings/chord identities, invalid finger assignments/barres, or missing promised coverage.
+Fail the build for duplicate definitions or chord shape combinations, broken references, string-count mismatches, invalid offsets/positions/frets, entirely muted shapes, inconsistent pitches/spellings/chord identities, or missing promised coverage. Acceptance tests check record validity and the promised initial content before `buildCatalog` writes JSON. The generator calculates notes and serializes the catalog.
 
-Verify open C major, muted/open strings, enharmonic spelling, the guitar G-to-B interval, low B on bass, full/partial barres, and triads. Test shape reuse across positions and tunings, fixed open strings, resolution, and ambiguous or missing lookup results. Verify both G-major patterns above resolve to the same named chord and are returned by a G-major lookup in guitar E standard.
+Use representative calculation cases for open C major, muted/open strings, enharmonic spelling, the guitar G-to-B interval, low B on bass, movable patterns, and triads. Keep catalog-wide acceptance checks for references, uniqueness, musical consistency, and required coverage; ordinary additions do not need per-chord expected-note tests. Test shape reuse across positions and tunings, fixed open strings, ID resolution, and missing references. Verify both G-major patterns above reference the same chord in guitar E standard. Name/alias search belongs to consuming applications.
 
 Data is authored in this repository; external collection imports and separate human playability-review tracking are outside scope.
 
@@ -176,11 +174,11 @@ Data is authored in this repository; external collection imports and separate hu
 
 1. Set up Kotlin build tooling and record naming and coverage conventions.
 2. Define shared types, IDs, shapes, positions, and validation rules.
-3. Author initial instruments, tunings, shapes, chord definitions, and chord fingerings.
+3. Author initial instruments, tunings, shapes, chord definitions, and chord shapes.
 4. Build deterministic exports, derive notes, and validate coverage.
 5. Verify JSON parsing and reference resolution with a non-JVM consumer.
 6. Document usage, coverage, versioning, and extensions; release JSON and its schema.
 
-The first release lets an application parse the JSON and resolve every promised chord fingering into its definitions and notes for use by the application's conversion algorithm.
+The first release lets an application parse the JSON and resolve every promised chord shape into its definitions and notes for use by the application's conversion algorithm.
 
-Later additions include instruments, tunings, chord types, inversions, barre/triad coverage, finger assignments, capo support, and notation conventions. Microtonal support requires revisiting the semitone pitch model. Procedural fingering generation, if needed, belongs in a separate library.
+Later additions include instruments, tunings, chord structures, inversions, movable-major/triad coverage, capo support, and notation conventions. Microtonal support requires revisiting the semitone pitch model. Procedural shape generation, if needed, belongs in a separate library.

@@ -31,10 +31,10 @@
       },
       "minItems": 0
     },
-    "chordTypes": {
+    "chordStructures": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/chordType"
+        "$ref": "#/$defs/chordStructure"
       },
       "minItems": 0
     },
@@ -45,10 +45,10 @@
       },
       "minItems": 0
     },
-    "chordFingerings": {
+    "chordShapes": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/chordFingering"
+        "$ref": "#/$defs/chordShape"
       },
       "minItems": 0
     },
@@ -68,9 +68,9 @@
     "instruments",
     "tunings",
     "shapes",
-    "chordTypes",
+    "chordStructures",
     "chords",
-    "chordFingerings",
+    "chordShapes",
     "derivedNotes"
   ],
   "additionalProperties": false,
@@ -82,15 +82,6 @@
     "spelling": {
       "type": "string",
       "pattern": "^[A-G](?:♯{1,2}|♭{1,2})?(?![\\s\\S])"
-    },
-    "finger": {
-      "enum": [
-        "thumb",
-        "index",
-        "middle",
-        "ring",
-        "little"
-      ]
     },
     "pitch": {
       "type": "object",
@@ -287,66 +278,6 @@
         }
       ]
     },
-    "barre": {
-      "type": "object",
-      "properties": {
-        "finger": {
-          "$ref": "#/$defs/finger"
-        },
-        "fromString": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 2147483647
-        },
-        "toString": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 2147483647
-        },
-        "offset": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 2147483647
-        }
-      },
-      "required": [
-        "finger",
-        "fromString",
-        "toString",
-        "offset"
-      ],
-      "additionalProperties": false
-    },
-    "assignment": {
-      "type": "object",
-      "properties": {
-        "fingers": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/finger"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "minItems": 1
-        },
-        "barres": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/barre"
-          },
-          "minItems": 0
-        }
-      },
-      "required": [
-        "fingers"
-      ],
-      "additionalProperties": false
-    },
     "shape": {
       "type": "object",
       "properties": {
@@ -367,13 +298,6 @@
         },
         "positions": {
           "$ref": "#/$defs/positions"
-        },
-        "fingerAssignments": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/assignment"
-          },
-          "minItems": 0
         }
       },
       "required": [
@@ -404,7 +328,7 @@
       ],
       "additionalProperties": false
     },
-    "chordType": {
+    "chordStructure": {
       "type": "object",
       "properties": {
         "id": {
@@ -439,7 +363,7 @@
         "root": {
           "$ref": "#/$defs/spelling"
         },
-        "typeId": {
+        "structureId": {
           "$ref": "#/$defs/id"
         },
         "name": {
@@ -469,47 +393,12 @@
       "required": [
         "id",
         "root",
-        "typeId",
+        "structureId",
         "name"
       ],
       "additionalProperties": false
     },
-    "provenance": {
-      "type": "object",
-      "properties": {
-        "source": {
-          "type": "string",
-          "minLength": 1
-        },
-        "license": {
-          "anyOf": [
-            {
-              "type": "string",
-              "minLength": 1
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "notes": {
-          "anyOf": [
-            {
-              "type": "string",
-              "minLength": 1
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "source"
-      ],
-      "additionalProperties": false
-    },
-    "chordFingering": {
+    "chordShape": {
       "type": "object",
       "properties": {
         "id": {
@@ -537,20 +426,6 @@
           },
           "minItems": 0,
           "uniqueItems": true
-        },
-        "provenance": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/provenance"
-          },
-          "minItems": 0
-        },
-        "fingerAssignments": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/assignment"
-          },
-          "minItems": 0
         }
       },
       "required": [
