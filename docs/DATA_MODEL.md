@@ -52,9 +52,9 @@ The catalog follows these cross-record and musical rules, checked by acceptance 
 - A slash bass agrees with the lowest sounding note. The anchor need not be the root or bass.
 - Reject duplicate aliases/tags, empty labels.
 
-Initial catalog completeness is checked separately against [PLANNING.md](../PLANNING.md).
+Completeness tests preserve the original baseline described in [PLANNING.md](../PLANNING.md).
 
-Test note calculation with a small set of representative expected outputs: open, muted, movable, bass, and accidental/octave boundaries. Catalog-wide acceptance checks cover references, uniqueness, and musical consistency. Adding ordinary catalog records does not require handwritten expected notes; add calculation cases when introducing new behavior or fixing a regression.
+Test note calculation with a small set of representative expected outputs: open, muted, movable, bass, and accidental/octave boundaries. Catalog-wide acceptance checks cover references, uniqueness, and musical consistency. Add calculation cases when introducing new behavior or fixing a regression.
 
 Normalization is an authoring operation, not a silent JSON repair: shift movable offsets down to minimum 0 and increase position accordingly, preserving absolute frets. Shift position bounds consistently. Open-string instructions are never shifted.
 

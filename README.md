@@ -63,15 +63,15 @@ Acceptance and schema tests use [Eclipse Vert.x JSON Schema](https://vertx.io/do
 - A shape position is its anchor fret, not necessarily its root fret. Keep open strings distinct from relative fret offsets.
 - Kotlin objects are the authored source; JSON and derived pitches are generated output. No separately authored resolved catalog is maintained.
 
-## Initial catalog source
+## Catalog source
 
-[BuildCatalog.kt](src/main/kotlin/chords/processing/BuildCatalog.kt) gathers 3 instruments, 3 tunings, 2 chord structures, 17 chords, 30 reusable shapes, and 162 chord shapes into `CatalogSource`, then calculates notes and creates the JSON export.
+[BuildCatalog.kt](src/main/kotlin/chords/processing/BuildCatalog.kt) gathers authored definitions into `CatalogSource`, calculates notes, and creates the JSON export. The [catalog definitions](src/main/kotlin/chords/catalog) and generated JSON are the inventory of available instruments, tunings, chords, and shapes.
 
 ## Adding catalog data
 
 Define shared records in `src/main/kotlin/chords/catalog`. Register each shape once; link it to a tuning, position, and chord through a `ChordShape` record. Chord-shape declarations are grouped by tuning, supplying its ID once per group. Each declaration selects a reusable shape and chords at finite positions. Multiple shapes can represent the same chord in a compatible tuning. Use `fixedShape` for nut-anchored absolute patterns and `Shape` for movable offsets.
 
-Run `./gradlew validateCatalog` after edits. Acceptance failures report the affected record ID and reason. New chord structures supply degree/semitone formulas; display names are not parsed. Update the catalog completeness tests only when the agreed catalog scope changes.
+Run `./gradlew validateCatalog` after edits. Acceptance failures report the affected record ID and reason. New chord structures supply degree/semitone formulas; display names are not parsed. Ordinary additions need only catalog definitions and the existing acceptance checks. Update documentation or add focused tests when behavior or the format changes. Completeness tests protect the original baseline.
 
 ## Source organization
 
@@ -79,4 +79,4 @@ Run `./gradlew validateCatalog` after edits. Acceptance failures report the affe
 - `catalog/`: authored instruments, tunings, chords, shapes, and records.
 - `processing/`: `BuildCatalog.kt` builds and writes JSON; `CalculateChordNotes.kt` calculates frets and spelled sounding notes.
 
-Tests mirror these packages, with `acceptance/` holding structural, musical, and JSON Schema checks. `CatalogCompletenessTest` checks the promised initial content. Calculation tests use representative open, muted, movable, bass, and accidental/octave cases. New catalog records do not each need handwritten expected notes. The generator handles reference lookup, note calculation, and serialization; catalog rules are enforced by the required tests.
+Tests mirror these packages, with `acceptance/` holding structural, musical, and JSON Schema checks. `CatalogCompletenessTest` checks the promised initial content. Calculation tests use representative open, muted, movable, bass, and accidental/octave cases. Shared acceptance checks apply to new catalog records automatically. The generator handles reference lookup, note calculation, and serialization; catalog rules are enforced by the required tests.

@@ -12,7 +12,7 @@ internal val roots = listOf(
     Root("a", "A"), Root("b-flat", "B♭", listOf("Bb", "A♯", "A#")), Root("b", "B"),
 )
 
-internal val chords = listOf("c", "a", "g", "e", "d").map { id ->
+internal val chords = listOf("c", "a", "g", "e", "d", "f").map { id ->
     val root = roots.single { it.id == id }
     Chord(ChordId("$id-major"), root.spelling, ChordStructureId("major"),
         "${root.spelling} major", listOf(root.spelling, "${root.spelling}maj"))

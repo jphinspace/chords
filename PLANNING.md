@@ -2,7 +2,7 @@
 
 ## Scope
 
-Shapes describe string/fret patterns only; hand placement is outside scope.
+Shapes describe string/fret patterns.
 
 A language-agnostic JSON chord catalog for applications that select an instrument, tuning, chord, and shape, then find comparable chords elsewhere. This repository provides catalog data; the application handles conversion, similarity, ranking, and UI.
 
@@ -114,49 +114,15 @@ Movable examples below use numbers for offsets and `x` for muted strings, all in
 | Major triad | 0 0 1 x x x | 5 | 5 5 6 x x x | A major |
 | Same triad | 0 0 1 x x x | 7 | 7 7 8 x x x | B major |
 
-Movable major and triad examples demonstrate model support; full catalog coverage comes later.
+These examples illustrate reusable shapes and placements.
 
-## Initial catalog
+## Baseline coverage
 
-The authored catalog contains 3 instruments, 3 tunings, 2 chord structures, 17 chords, 30 shapes, and 162 chord shapes.
+The original baseline is six-string guitar in E standard, four-string bass in E standard, and five-string bass in B standard. It includes open CAGED major guitar chords (with both G-major variants) and two-/three-note power chords rooted on either of the lowest two strings at frets 0–12.
 
-### Instruments and tunings
+Completeness tests preserve this minimum while allowing additions. Current coverage is defined by the [catalog source](src/main/kotlin/chords/catalog) and generated JSON. The examples above explain the model.
 
-| Instrument | Tuning | Open strings, string 1 first | MIDI values |
-| --- | --- | --- | --- |
-| Six-string guitar | E standard | E4 B3 G3 D3 A2 E2 | 64, 59, 55, 50, 45, 40 |
-| Four-string bass | E standard | G2 D2 A1 E1 | 43, 38, 33, 28 |
-| Five-string bass | B standard | G2 D2 A1 E1 B0 | 43, 38, 33, 28, 23 |
-
-Four- and five-string bass are separate instrument definitions in the bass-guitar family.
-
-### Open CAGED
-
-Initial scope: C, A, G, E, and D open major guitar chords, including both G-major shapes. Minor, seventh, extended, and movable variants come later.
-
-| Chord | Absolute frets, strings 1–6 (`x` = muted) |
-| --- | --- |
-| C | 0 1 0 2 3 x |
-| A | 0 2 2 2 0 x |
-| G | 3 0 0 0 2 3 |
-| G (alternative) | 3 0 0 0 x 3 |
-| E | 0 0 1 2 2 0 |
-| D | 2 3 2 0 x x |
-
-Bass initially has power chords only. Curate any future open major bass shapes explicitly rather than truncating guitar shapes.
-
-### Power chords
-
-- Cover all twelve roots on each initial tuning with both two-note root/fifth and three-note root/fifth/octave shapes.
-- Initial coverage range: root in the bass, on either of the lowest two strings, at frets 0–12 inclusive. Other notes may extend beyond fret 12.
-- Reuse movable shapes at explicit positions; open-root variants need explicit permission for position 0. Validate pitches against each tuning, including unequal string intervals.
-- Mute unused strings and avoid exhaustive string-subset generation.
-- Choose canonical root spellings and useful enharmonic aliases, such as C♯5/D♭5; the suffix 5 denotes a power chord.
-- Build-time templates may generate finite chord shapes. Runtime lookup does not synthesize shapes.
-
-The fret range limits initial catalog coverage, not model capability. The model can represent movable major and triad shapes. Test-only fixtures cover movable triads, Drop D, E♭ standard, open minor/seventh patterns, and shape reuse across tunings. These do not expand the initial catalog. Movable major patterns are also tested.
-
-Canonical names use readable labels such as `G major` and `G power chord`; symbols such as `G` and `G5` are aliases.
+Add ordinary catalog records through the catalog definitions and validate them with the shared acceptance checks. Add focused tests for new behavior or regressions, and update documentation for changes to the format or authoring workflow.
 
 ## Consumer access
 
@@ -166,9 +132,9 @@ The JSON contains instruments, tunings, shapes, chord structures, chords, chord 
 
 Fail the build for duplicate definitions or chord shape combinations, broken references, string-count mismatches, invalid offsets/positions/frets, entirely muted shapes, inconsistent pitches/spellings/chord identities, or missing promised coverage. Acceptance tests check record validity and the promised initial content before `buildCatalog` writes JSON. The generator calculates notes and serializes the catalog.
 
-Use representative calculation cases for open C major, muted/open strings, enharmonic spelling, the guitar G-to-B interval, low B on bass, movable patterns, and triads. Keep catalog-wide acceptance checks for references, uniqueness, musical consistency, and required coverage; ordinary additions do not need per-chord expected-note tests. Test shape reuse across positions and tunings, fixed open strings, ID resolution, and missing references. Verify both G-major patterns above reference the same chord in guitar E standard. Name/alias search belongs to consuming applications.
+Use representative calculation cases for open C major, muted/open strings, enharmonic spelling, the guitar G-to-B interval, low B on bass, movable patterns, and triads. Keep catalog-wide acceptance checks for references, uniqueness, musical consistency, and required coverage. Test shape reuse across positions and tunings, fixed open strings, ID resolution, and missing references. Verify both G-major patterns above reference the same chord in guitar E standard. Name/alias search belongs to consuming applications.
 
-Data is authored in this repository; external collection imports and separate human playability-review tracking are outside scope.
+Data is authored in this repository.
 
 ## Delivery
 

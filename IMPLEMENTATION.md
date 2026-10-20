@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Based on [PLANNING.md](PLANNING.md). Each checkbox is a separate task.
+Based on [PLANNING.md](PLANNING.md). Each checkbox is an implementation milestone. Catalog additions follow the authoring workflow in [README.md](README.md).
 
 Build tooling: Kotlin/JVM, Gradle Kotlin DSL, and kotlinx.serialization. Author typed Kotlin objects and release one shared JSON catalog for consumers in any language. Lookup and resolution functions are internal tooling; no consumer SDK is required.
 

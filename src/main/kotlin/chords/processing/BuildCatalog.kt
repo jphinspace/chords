@@ -9,7 +9,7 @@ import kotlinx.serialization.encodeToString
 
 /** Gather authored records for generation or acceptance tests. */
 internal fun catalogSource(catalogTunings: List<Tuning> = tunings): CatalogSource =
-    CatalogSource("0.1.0", instruments.toList(), catalogTunings.toList(), openShapes + powerShapes,
+    CatalogSource("0.1.0", instruments.toList(), catalogTunings.toList(), openShapes + movableShapes + powerShapes,
         chordStructures.toList(), chords.toList(), chordShapes)
 
 /** Calculate notes and assemble the export in stable ID order. Acceptance tests check the catalog rules. */

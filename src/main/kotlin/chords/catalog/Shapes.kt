@@ -12,6 +12,13 @@ internal val openShapes = listOf(
     fixedShape("guitar-6-d-open", listOf(2, 3, 2, 0, null, null)),
 )
 
+/** Movable patterns shared by placements at different frets. */
+internal val movableShapes = listOf(
+    Shape(ShapeId("guitar-6-e-major-movable"), 6,
+        listOf(0, 0, 1, 2, 2, 0).map { StringInstruction.Offset(it) },
+        PermittedPositions.Range()),
+)
+
 // Geometry is registered once, independently of the tunings using it.
 internal val powerShapes = listOf(6, 4, 5).flatMap { count ->
     listOf(count, count - 1).flatMap { rootString ->

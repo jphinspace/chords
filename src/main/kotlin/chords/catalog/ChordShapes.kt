@@ -49,6 +49,8 @@ internal val chordShapes = buildList {
             "guitar-6-e-open", "e-major", listOf("open", "caged-E"))
         chord("guitar-6-e-standard-d-major-open",
             "guitar-6-d-open", "d-major", listOf("open", "caged-D"))
+        chord("guitar-6-e-standard-f-major-fret-1",
+            "guitar-6-e-major-movable", "f-major", listOf("movable", "caged-E"), position = 1)
         expand("guitar-6-e-standard-power-root-6-notes-2-fret",
             ShapeId("strings-6-power-root-6-notes-2-open"),
             powerChordsFrom("E", 0..0), listOf("power", "open"))
